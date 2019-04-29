@@ -1,3 +1,14 @@
+"""
+blobGame.py
+Izabele Bauzyte
+4/28/2019
+
+This game has a player move around the screen
+to capture food particles, and once they have
+captured all food, they reach final form and
+have to capture the enemies
+"""
+
 
 #import and initialize
 import pygame, random, time
