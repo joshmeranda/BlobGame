@@ -6,19 +6,28 @@ pygame.init()
 screen = pygame.display.set_mode((600, 600))
 
 class Player(pygame.sprite.Sprite):
+    """
+    The central blob character
+    stays in the middle of the screen
+    """
 
     def __init__(self):
 
         pygame.sprite.Sprite.__init__(self)
+        #img and rect
         self.scale = 30
         self.imgSrc = "player.png"
         self.image = pygame.transform.scale(pygame.image.load(self.imgSrc).convert_alpha(), (self.scale, self.scale))
         self.rect = self.image.get_rect()
         self.rect.centerx = screen.get_width() / 2
         self.rect.centery = screen.get_height() / 2
+        
         self.finalForm = False
 
     def Feed(self, increase = 2):
+        """
+        Increases player size
+        """
 
         self.scale += increase
         self.image = pygame.transform.scale(pygame.image.load(self.imgSrc), (self.scale, self.scale))
@@ -27,12 +36,18 @@ class Player(pygame.sprite.Sprite):
         self.rect.centery = screen.get_height() / 2
 
     def FinalForm(self):
+        """
+        Changes player image
+        """
         
         self.imgSrc = "playerOP.png"
         self.image = pygame.transform.scale(pygame.image.load(self.imgSrc).convert_alpha(), (self.scale, self.scale))
         self.finalForm = True
 
 class Food(pygame.sprite.Sprite):
+    """
+    Randomly generated food particles
+    """
 
     def __init__(self, xStart, xEnd, yStart, yEnd):
 
@@ -42,6 +57,7 @@ class Food(pygame.sprite.Sprite):
         self.image = pygame.transform.rotate(self.image, random.randint(0, 360))
         self.rect = self.image.get_rect()
         
+        # area in which food can spawn due to borders
         self.xStart = xStart
         self.xEnd = xEnd
         self.yStart = yStart
@@ -51,15 +67,26 @@ class Food(pygame.sprite.Sprite):
         self.rect.centery = random.randint(self.yStart, self.yEnd)
 
     def moveVert(self, speed):
+        """
+        Moves food when player moves vertically
+        """
 
         self.rect.centery += speed
 
     def moveHor(self, speed):
+        """
+        Moves food when player moves hor
+        """
 
         self.rect.centerx += speed
 
     def update(self):
+        """
+        Random movement contained inside moveable area
+        TODO : still occasionally spawns/moves outside of playeable area
+        """
 
+        # movement speed
         maxMove = 5
 
         if (self.rect.centerx - maxMove > self.xStart) or (self.rect.centerx + maxMove < self.xEnd):
@@ -71,6 +98,10 @@ class Food(pygame.sprite.Sprite):
                 self.rect.centery += random.randint(-maxMove, maxMove)
 
 class Enemy(pygame.sprite.Sprite):
+    """
+    Enemy class chases player initially then changes to random 
+    movement when the player hits final form
+    """
 
     def __init__(self, background, player):
 
@@ -82,16 +113,24 @@ class Enemy(pygame.sprite.Sprite):
         self.player = player
 
     def moveVert(self, speed):
+        """
+        updates vert with player movement
+        """
 
         self.rect.centery += speed
 
     def moveHor(self, speed):
-
+        """
+        updates hor with player movement
+        """
+        
         self.rect.centerx += speed
 
     def update(self):
         """
         Moves closer to the player every update
+        or changes to random motion when they are
+        in final form
         """
 
         if self.player.finalForm:
@@ -103,6 +142,9 @@ class Enemy(pygame.sprite.Sprite):
             self.chasePlayer()
 
     def chasePlayer(self):
+        """
+        Moves closer to the player
+        """
 
         if self.player.rect.centerx > self.rect.centerx:
 
@@ -131,8 +173,8 @@ class Label(pygame.sprite.Sprite):
         """
         string text
         tuple location
-        3 tuple for color default is white
         int alignment (-1 = left, 0 = center, 1 = right)
+        3 tuple for color default is white
         """
 
         pygame.sprite.Sprite.__init__(self)
@@ -167,6 +209,10 @@ class Label(pygame.sprite.Sprite):
             self.rect.centery = self.loc[1]
 
 class Border(pygame.sprite.Sprite):
+    """
+    Constrains player from moving outside of playable area
+    and conceals black background from player with appropriate size
+    """
 
     def __init__(self, startX, startY, width, height):
 
@@ -180,10 +226,16 @@ class Border(pygame.sprite.Sprite):
         self.rect.top = startY
 
     def moveVert(self, speed):
+        """
+        updates with player motion
+        """
 
         self.rect.centery += speed
 
     def moveHor(self, speed):
+        """
+        updates with player motion
+        """
 
         self.rect.centerx += speed
 
@@ -355,7 +407,7 @@ def game():
     clock = pygame.time.Clock()
     keepGoing = True
 
-    # for keeping track on background location
+    # for keeping track of background location
     x = 0
     y = 0
 
@@ -495,6 +547,10 @@ def game():
     return previousScore
 
 def instructions(previousScore, highScore):
+    """
+    Tells user how to play
+    and shows previous scores
+    """
 
     allSprites = pygame.sprite.Group(Player())
 
@@ -513,7 +569,6 @@ def instructions(previousScore, highScore):
     insFont = pygame.font.SysFont(None, 30)
 
     # really awful instruction string that tells user how to play
-
     instructions = ["",
     "Blob Game",
     "Collect the food and grow into your final form",
@@ -544,6 +599,7 @@ def instructions(previousScore, highScore):
             
             if event.type == pygame.QUIT:
                 
+                # exit game completely
                 keepGoing = False
                 donePlaying = True
                 
@@ -551,6 +607,7 @@ def instructions(previousScore, highScore):
 
                 if event.key == pygame.K_SPACE:
     
+                    # play again
                     keepGoing = False
                     donePlaying = False
 
