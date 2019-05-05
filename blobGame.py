@@ -9,6 +9,26 @@ captured all food, they reach final form and
 have to capture the enemies
 """
 
+"""
+Attributions:
+    
+All art by Izabele Bauzyte
+
+Babylon.ogg [Modified]
+    "Babylon" Kevin MacLeod (incompetech.com)
+    Licensed under Creative Commons: By Attribution 3.0 License
+    http://creativecommons.org/licenses/by/3.0/
+Ringing_Ambient_Background.ogg [Modified]
+    Youtube Audio Library
+Soft_Blossom.ogg [Modified]
+    Youtube Audio Library
+    Ann Annie
+Splat.ogg [Modified]
+    soundbible.com/1728-Spit-Splat-2.html
+    Mike Koenig
+    02/09/11
+"""
+
 
 #import and initialize
 import pygame, random, time
@@ -33,7 +53,31 @@ class Player(pygame.sprite.Sprite):
         self.rect.centerx = screen.get_width() / 2
         self.rect.centery = screen.get_height() / 2
         
+        # for animation of rotation
+        self.degrees = 0
+        
         self.finalForm = False
+        
+    def rotate(self):
+        """
+        Animates image
+        """
+        
+        if (self.degrees + 1 > 360):
+            
+            self.degrees = 0
+            
+        else:
+            
+            self.degrees += 1
+        
+        self.image = pygame.transform.rotate(
+                        pygame.transform.scale(
+                                pygame.image.load(self.imgSrc).convert_alpha(), (self.scale, self.scale)), self.degrees)
+        
+    def update(self):
+        
+        self.rotate()
 
     def Feed(self, increase = 2):
         """
@@ -45,6 +89,8 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.centerx = screen.get_width() / 2
         self.rect.centery = screen.get_height() / 2
+        
+        pygame.mixer.Sound("Splat.ogg").play()
 
     def FinalForm(self):
         """
@@ -54,6 +100,8 @@ class Player(pygame.sprite.Sprite):
         self.imgSrc = "playerOP.png"
         self.image = pygame.transform.scale(pygame.image.load(self.imgSrc).convert_alpha(), (self.scale, self.scale))
         self.finalForm = True
+        
+        pygame.mixer.Sound("Ringing_Ambient_Background.ogg").play()
 
 class Food(pygame.sprite.Sprite):
     """
@@ -64,7 +112,8 @@ class Food(pygame.sprite.Sprite):
 
         pygame.sprite.Sprite.__init__(self)
         
-        self.image = pygame.image.load("food.png").convert_alpha()
+        self.imgSrc = "food.png"
+        self.image = pygame.image.load(self.imgSrc).convert_alpha()
         self.image = pygame.transform.rotate(self.image, random.randint(0, 360))
         self.rect = self.image.get_rect()
         
@@ -76,6 +125,13 @@ class Food(pygame.sprite.Sprite):
         
         self.rect.centerx = random.randint(self.xStart, self.xEnd)
         self.rect.centery = random.randint(self.yStart, self.yEnd)
+        
+        # x and y movement on screen
+        self.maxMove = 5
+        
+        # rotation animation
+        self.rotationSpeed = random.randint(0, 5)
+        self.degrees = 0
 
     def moveVert(self, speed):
         """
@@ -90,24 +146,41 @@ class Food(pygame.sprite.Sprite):
         """
 
         self.rect.centerx += speed
+        
+    def rotate(self):
+        
+                
+        if (self.degrees + self.rotationSpeed > 360):
+            
+            self.degrees = 0
+            
+        else:
+            
+            self.degrees += self.rotationSpeed
+        
+        self.image = pygame.transform.rotate(
+                                pygame.image.load(self.imgSrc).convert_alpha(), self.degrees)
 
     def update(self):
         """
         Random movement contained inside moveable area
         TODO : still occasionally spawns/moves outside of playeable area
+        
+            All food particles spawn inside play area but are able to move outside
+            so the problem is in this function.
+            Discrepancy between the moveHor/moveVert functions and this one?
         """
+        
+        self.rotate()
 
-        # movement speed
-        maxMove = 5
+        if (self.rect.centerx - self.maxMove > self.xStart) or (self.rect.centerx + self.maxMove < self.xEnd):
 
-        if (self.rect.centerx - maxMove > self.xStart) or (self.rect.centerx + maxMove < self.xEnd):
+            self.rect.centerx += random.randint(-self.maxMove, self.maxMove)
 
-            self.rect.centerx += random.randint(-maxMove, maxMove)
+        if (self.rect.centery - self.maxMove > self.yStart) or (self.rect.centery + self.maxMove < self.yEnd):
 
-        if (self.rect.centery - maxMove > self.yStart) or (self.rect.centery + maxMove < self.yEnd):
-
-                self.rect.centery += random.randint(-maxMove, maxMove)
-
+                self.rect.centery += random.randint(-self.maxMove, self.maxMove)
+            
 class Enemy(pygame.sprite.Sprite):
     """
     Enemy class chases player initially then changes to random 
@@ -117,11 +190,16 @@ class Enemy(pygame.sprite.Sprite):
     def __init__(self, background, player):
 
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load("enemy.png").convert_alpha()
+        self.imgSrc = "enemy.png"
+        self.image = pygame.image.load(self.imgSrc).convert_alpha()
         self.rect = self.image.get_rect()
         self.rect.centerx = random.randint(0, background.get_width())
         self.rect.centery = random.randint(0, background.get_height())
         self.player = player
+        
+        # rotation animation
+        self.degrees = 0
+        self.rotationSpeed = random.randint(0, 5)
 
     def moveVert(self, speed):
         """
@@ -136,6 +214,20 @@ class Enemy(pygame.sprite.Sprite):
         """
         
         self.rect.centerx += speed
+        
+    def rotate(self):
+        
+        if (self.degrees + self.rotationSpeed > 360):
+            
+            self.degrees = 0
+            
+        else:
+            
+            self.degrees += self.rotationSpeed
+        
+        self.image = pygame.transform.rotate(
+                                pygame.image.load(self.imgSrc).convert_alpha(), self.degrees)
+
 
     def update(self):
         """
@@ -143,6 +235,8 @@ class Enemy(pygame.sprite.Sprite):
         or changes to random motion when they are
         in final form
         """
+
+        self.rotate()
 
         if self.player.finalForm:
 
@@ -342,7 +436,7 @@ def game():
 
     # num food and enemies
     numEnemies = 15
-    numFood = 10
+    numFood = 15
     numFoodCollected = 0
     numEnemiesKilled = 0 
 
@@ -462,6 +556,10 @@ def game():
                     numEnemies -= 1
                     lives -= 1
                     livesLabel.text = livesLabelText % (lives)
+                    
+                    thing = pygame.Surface((screen.get_width(), screen.get_height()))
+                    thing.fill((255, 0, 0))
+                    screen.blit(thing, (0,0))
 
                     if lives == 0:
 
@@ -483,7 +581,7 @@ def game():
                     if numFoodCollected == numFood:
                         
                         player.FinalForm()
-                        labelGroup.add(Label("Final Form", (20,20), -1))
+                        labelGroup.add(Label("Final Form", (20,20), -1, (255, 0, 0)))
                         collisionLabel.text = enemyCollisionText % (numEnemiesKilled, numEnemies)
                         
                     else:
@@ -572,7 +670,7 @@ def instructions(previousScore, highScore):
 
         # using a food class and changing image to avoid the following enemy behaviour
         foodWithEnemyPic = Food(screen.get_width() / 2, screen.get_width(), 500, screen.get_height() - 30)
-        foodWithEnemyPic.image = pygame.image.load("enemy.png")
+        foodWithEnemyPic.imgSrc = "enemy.png"
 
         allSprites.add(food)
         allSprites.add(foodWithEnemyPic)
@@ -583,7 +681,7 @@ def instructions(previousScore, highScore):
     instructions = ["",
     "Blob Game",
     "Collect the food and grow into your final form",
-    "Then eat the enemies pursueing you",
+    "Then eat the enemies pursuing you",
     "Press space to begin", ("Previous Score: %d" % previousScore), ("Session High Score: %d" % highScore), "", "",
                     "                                       You ","","", "", "", "",
                     "        Food                                        Enemy"
@@ -636,6 +734,8 @@ def instructions(previousScore, highScore):
     
     
 def main():
+    
+    pygame.mouse.set_visible(False)
 
     previousScore = 0
     highScore = 0
@@ -644,10 +744,17 @@ def main():
     
     while not donePlaying:
         
+        pygame.mixer.stop()
+        pygame.mixer.Sound("Soft_Blossom.ogg").play(-1)
+        
         donePlaying = instructions(previousScore, highScore)
 
         if not donePlaying:
+            
+            pygame.mixer.stop()
+            pygame.mixer.Sound("Babylon.ogg").play(-1)
 
+            print("game")
             previousScore = game()
             if previousScore > highScore:
                 
