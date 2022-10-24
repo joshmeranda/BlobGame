@@ -19,6 +19,8 @@
 #import and initialize
 import pygame
 import random, time, SqueakerGameSprites
+import os
+
 pygame.init()
 
 if not pygame.mixer:
@@ -28,8 +30,8 @@ if not pygame.mixer:
 else:
     
     pygame.mixer.init()
-    
-    music = pygame.mixer.Sound("music\MonkeysSpinningMonkeys.ogg")
+
+    music = pygame.mixer.Sound(os.path.join("music", "MonkeysSpinningMonkeys.ogg"))
     music.play(-1)
 
 screen = pygame.display.set_mode((800, 800))
@@ -42,7 +44,7 @@ def main():
 
     #entities
         # background
-    background = pygame.image.load("images\grassyBackground.png").convert()
+    background = pygame.image.load(os.path.join("images", "grassyBackground.png")).convert()
     screen.blit(background, (0,0))
 
         # squeakers
@@ -94,7 +96,7 @@ def main():
                 squeak.play_squeak()
 
                 # adds an image of a captured bunny to bottom of screen
-                scoreIcon = squeak.imgPath + "scoreIcon.png"
+                scoreIcon = os.path.join(squeak.imgPath, "scoreIcon.png")
                 scoreGroup.add(SqueakerGameSprites.ScoreItem((score * 70), screen.get_height() - 20, scoreIcon))
                 
                 score += 1

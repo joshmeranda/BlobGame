@@ -6,7 +6,7 @@ Izabele Bauzyte
 A collection of all the sprites used for the squeaker game
 """
 
-import pygame, random
+import pygame, random, os
 
 class Squeaker(pygame.sprite.Sprite):
     """
@@ -20,15 +20,16 @@ class Squeaker(pygame.sprite.Sprite):
 
         # squeak sound
         self.squeakSounds = ["squeak1.ogg", "squeak2.ogg", "squeak3.ogg"]
-        self.squeak = pygame.mixer.Sound("sounds\\" + random.choice(self.squeakSounds))
+        # self.squeak = pygame.mixer.Sound("sounds\\" + random.choice(self.squeakSounds))
+        self.squeak = pygame.mixer.Sound(os.path.join("sounds", random.choice(self.squeakSounds)))
 
         # 3 pattern options
         self.possiblePatterns = ["squeaker1", "squeaker2", "squeaker3"]
         self.pattern = random.choice(self.possiblePatterns)        
 
         # picks which animation frame is displayed first
-        self.imgPath = "images\\" + self.pattern + "\\"
-        self.patternVariants = [(self.imgPath + "squeaker1.png"), (self.imgPath + "squeaker2.png")]
+        self.imgPath = os.path.join("images", self.pattern)
+        self.patternVariants = [(os.path.join(self.imgPath, "squeaker1.png")), (os.path.join(self.imgPath, "squeaker2.png"))]
         self.patternVariant = random.choice(self.patternVariants)
         self.image = pygame.image.load(self.patternVariant).convert_alpha()
 
@@ -141,7 +142,7 @@ class Circle(pygame.sprite.Sprite):
     def __init__(self):
 
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load("images\cageCircle.png").convert_alpha()
+        self.image = pygame.image.load(os.path.join("images", "cageCircle.png")).convert_alpha()
         self.rect = self.image.get_rect()
 
     def update(self):
